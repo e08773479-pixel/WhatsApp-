@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   MessageCircle,
-  Users,
   CircleDashed,
   Phone,
   Search,
@@ -10,6 +9,7 @@ import {
   User,
   Archive,
 } from "lucide-react";
+import ChatWindow from "./components/ChatWindow";
 
 type Tab = "chats" | "updates" | "calls";
 
@@ -43,19 +43,26 @@ const chats = [
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>("chats");
   const [search, setSearch] = useState("");
+  const [selectedChat, setSelectedChat] = useState<number | null>(null);
 
   const filteredChats = chats.filter((chat) =>
     chat.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  const selected = chats.find((chat) => chat.id === selectedChat);
+
   return (
     <div className="app">
-      <aside className="sidebar">
+      <aside
+        className={`sidebar ${
+          selectedChat !== null ? "mobile-hidden" : ""
+        }`}
+      >
         <header className="topbar">
           <h1>Messenger</h1>
 
           <div className="top-actions">
-            <button aria-label="الحالة">
+            <button aria-label="التحديثات">
               <CircleDashed size={21} />
             </button>
 
@@ -71,9 +78,10 @@ export default function App() {
 
         <div className="search-box">
           <Search size={18} />
+
           <input
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(event) => setSearch(event.target.value)}
             placeholder="بحث"
           />
         </div>
@@ -107,10 +115,17 @@ export default function App() {
         <div className="chat-list">
           {activeTab === "chats" &&
             filteredChats.map((chat) => (
-              <button className="chat-item" key={chat.id}>
+              <button
+                className="chat-item"
+                key={chat.id}
+                onClick={() => setSelectedChat(chat.id)}
+              >
                 <div className="avatar">
                   {chat.name.charAt(0)}
-                  {chat.online && <span className="online-dot" />}
+
+                  {chat.online && (
+                    <span className="online-dot" />
+                  )}
                 </div>
 
                 <div className="chat-info">
@@ -134,7 +149,7 @@ export default function App() {
             <div className="empty-tab">
               <CircleDashed size={42} />
               <h2>التحديثات</h2>
-              <p>هنا هنضيف الحالات والتحديثات.</p>
+              <p>الحالات والتحديثات ستظهر هنا.</p>
             </div>
           )}
 
@@ -142,7 +157,7 @@ export default function App() {
             <div className="empty-tab">
               <Phone size={42} />
               <h2>المكالمات</h2>
-              <p>هنا هتظهر المكالمات الصوتية والفيديو.</p>
+              <p>سجل المكالمات سيظهر هنا.</p>
             </div>
           )}
         </div>
@@ -165,23 +180,25 @@ export default function App() {
         </footer>
       </aside>
 
-      <main className="conversation">
-        <div className="welcome">
-          <div className="welcome-icon">
-            <MessageCircle size={52} />
+      {selectedChat !== null && selected ? (
+        <ChatWindow />
+      ) : (
+        <main className="conversation">
+          <div className="welcome">
+            <div className="welcome-icon">
+              <MessageCircle size={52} />
+            </div>
+
+            <h2>Messenger</h2>
+
+            <p>اختر محادثة من القائمة لبدء المراسلة.</p>
+
+            <small>
+              محادثاتك ومكالماتك وحالاتك كلها في مكان واحد.
+            </small>
           </div>
-
-          <h2>Messenger</h2>
-
-          <p>
-            اختر محادثة من القائمة لبدء المراسلة.
-          </p>
-
-          <small>
-            محادثاتك ومكالماتك وحالاتك كلها في مكان واحد.
-          </small>
-        </div>
-      </main>
+        </main>
+      )}
     </div>
   );
 }
